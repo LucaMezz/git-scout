@@ -1,7 +1,7 @@
 use clap::Parser;
 use std::path::PathBuf;
 
-#[derive(Parser)]
+#[derive(Parser, Debug)]
 #[command(
     name = "git-scout",
     about = "Scan directories for Git repositories that need attention.",
@@ -39,6 +39,22 @@ struct Cli {
     #[arg(short = 'a', long)]
     all: bool,
 
+    /// Show repositories with no dirty changes and no unpushed commits
+    #[arg(long, conflicts_with_all = ["dirty", "unstaged", "staged", "untracked", "unpushed", "all"])]
+    clean: bool,
+
+    /// Only show repositories that have an upstream branch configured
+    #[arg(long, conflicts_with = "no_upstream")]
+    has_upstream: bool,
+
+    /// Only show repositories that do not have an upstream branch configured
+    #[arg(long, conflicts_with = "has_upstream")]
+    no_upstream: bool,
+
+    /// Only show repositories currently on the given branch
+    #[arg(long, value_name = "NAME")]
+    branch: Option<String>,
+
     /// Show matching status labels before each path
     #[arg(short = 'v', long)]
     details: bool,
@@ -67,9 +83,17 @@ struct Cli {
     #[arg(long, conflicts_with = "pager")]
     no_pager: bool,
 
+    /// Separate output entries with NUL bytes instead of newlines (for use with xargs -0)
+    #[arg(short = '0', long, conflicts_with_all = ["json", "pretty"])]
+    null: bool,
+
     /// Scan all directories, including those ignored by .gitignore
     #[arg(long)]
     no_ignore: bool,
+
+    /// Follow hidden directories (those starting with '.')
+    #[arg(long, hide = true)]
+    hidden: bool,
 }
 
 fn main() {

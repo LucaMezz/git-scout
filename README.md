@@ -98,6 +98,36 @@ Show repositories with either uncommitted changes or unpushed commits:
 git-scout ~/dev --all
 ```
 
+Show fully clean repositories (no dirty changes, no unpushed commits):
+
+```sh
+git-scout ~/dev --clean
+```
+
+Only show repositories that have an upstream branch configured:
+
+```sh
+git-scout ~/dev --has-upstream
+```
+
+Only show repositories without any upstream branch:
+
+```sh
+git-scout ~/dev --no-upstream
+```
+
+Only show repositories currently on a specific branch:
+
+```sh
+git-scout ~/dev --branch main
+```
+
+NUL-separated output for use with `xargs -0`:
+
+```sh
+git-scout ~/dev --all -0 | xargs -0 -I{} lazygit -p {}
+```
+
 Show why each repository matched:
 
 ```sh
@@ -126,6 +156,12 @@ Scan all directories, including those ignored by `.gitignore`:
 
 ```sh
 git-scout ~/dev --all --no-ignore
+```
+
+Follow hidden directories (those starting with `.`):
+
+```sh
+git-scout ~/dev --hidden
 ```
 
 ---
@@ -157,6 +193,12 @@ staged                /home/luca/dev/appkit
 This is the format consumed by `fzf`, `xargs`, and shell scripts. You do not need to pass any flag — the switch is automatic.
 
 Use `--plain` to force this format on a terminal, or `--pretty` to force colored output when piped.
+
+Pass `-0` / `--null` to separate entries with NUL bytes instead of newlines. This is the safe choice when paths may contain spaces, and pairs with `xargs -0`:
+
+```sh
+git-scout ~/dev --all -0 | xargs -0 -I{} git -C {} status --short
+```
 
 ### JSON
 
@@ -256,23 +298,28 @@ Arguments:
   [ROOT]              Directory to scan. Defaults to the current directory.
 
 Options:
-      --depth <N>     Maximum directory depth to scan
-      --unstaged      Show repositories with unstaged tracked changes
-      --staged        Show repositories with staged changes
-      --untracked     Show repositories with untracked files
-  -d, --dirty         Show repositories with unstaged, staged, or untracked changes
-      --unpushed      Show repositories with commits not pushed to upstream
-  -a, --all           Show repositories with dirty or unpushed work
-  -v, --details       Show matching status labels before each path
-      --relative      Print paths relative to the scan root
-  -j, --json          Print machine-readable JSON output
-      --pretty        Force colored, formatted output (default when stdout is a terminal)
-      --plain         Force plain text output (default when stdout is piped)
-      --pager         Pipe output through a pager (default: $PAGER or less)
-      --no-pager      Disable automatic pager
-      --no-ignore     Scan all directories, including those ignored by .gitignore
-  -h, --help          Print help
-  -V, --version       Print version
+      --depth <N>         Maximum directory depth to scan
+      --unstaged          Show repositories with unstaged tracked changes
+      --staged            Show repositories with staged changes
+      --untracked         Show repositories with untracked files
+  -d, --dirty             Show repositories with unstaged, staged, or untracked changes
+      --unpushed          Show repositories with commits not pushed to upstream
+  -a, --all               Show repositories with dirty or unpushed work
+      --clean             Show repositories with no dirty changes and no unpushed commits
+      --has-upstream      Only show repositories that have an upstream branch configured
+      --no-upstream       Only show repositories that do not have an upstream branch configured
+      --branch <NAME>     Only show repositories currently on the given branch
+  -v, --details           Show matching status labels before each path
+      --relative          Print paths relative to the scan root
+  -j, --json              Print machine-readable JSON output
+      --pretty            Force colored, formatted output (default when stdout is a terminal)
+      --plain             Force plain text output (default when stdout is piped)
+  -0, --null              Separate output entries with NUL bytes instead of newlines
+      --pager             Pipe output through a pager (default: $PAGER or less)
+      --no-pager          Disable automatic pager
+      --no-ignore         Scan all directories, including those ignored by .gitignore
+  -h, --help              Print help
+  -V, --version           Print version
 ```
 
 ---
@@ -294,6 +341,10 @@ A repository has **unpushed commits** if it has local commits that have not been
 ### --all
 
 The `--all` flag is the union of dirty and unpushed: it matches any repository that has work which has not yet been reflected in the remote.
+
+### Clean
+
+A repository is **clean** if it has no dirty changes of any kind and no unpushed commits — the working tree matches the last commit and the last commit is reflected in the upstream. `--clean` is the exact inverse of `--all`.
 
 ---
 
