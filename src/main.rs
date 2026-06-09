@@ -150,7 +150,7 @@ fn main() -> Result<()> {
     let use_pager = !cli.no_pager && !cli.null && (cli.pager || (use_pretty && is_tty));
 
     if use_pager {
-        if let Err(e) = pipe_through_pager(&output) {
+        if let Err(e) = pipe_through_pager(&output, cli.pager) {
             eprintln!("warning: pager failed ({e}), falling back to direct output");
             std::io::stdout().write_all(output.as_bytes())?;
         }
@@ -305,12 +305,14 @@ fn output_json(results: &[RepoStatus], root: &Path, relative: bool) -> Result<()
     Ok(())
 }
 
-fn pipe_through_pager(output: &str) -> Result<()> {
+fn pipe_through_pager(output: &str, explicit: bool) -> Result<()> {
     let pager = std::env::var("PAGER").unwrap_or_else(|_| "less".to_owned());
     if std::env::var("LESS").is_err() {
-        // F=exit if one screen, R=pass ANSI codes, X=no termcap init/deinit
+        // R=pass ANSI codes, X=no termcap init/deinit
+        // F=auto-exit if fits on one screen (only for auto-pager, not --pager)
         // SAFETY: single-threaded at this point; no concurrent env reads
-        unsafe { std::env::set_var("LESS", "-FRX") };
+        let flags = if explicit { "-RX" } else { "-FRX" };
+        unsafe { std::env::set_var("LESS", flags) };
     }
     let mut child = std::process::Command::new(&pager)
         .stdin(std::process::Stdio::piped())
