@@ -173,12 +173,13 @@ git-scout ~/dev --hidden
 When stdout is a terminal, `git-scout` renders colored, aligned output:
 
 ```
- codelane   ~/dev/codelane    ● unstaged  ● untracked
- mezzarch   ~/dev/mezzarch    ↑ unpushed
- appkit     ~/dev/appkit      ● staged
+ NAME       PATH                STATUS
+ codelane   ~/dev/codelane      ● unstaged  ● untracked
+ mezzarch   ~/dev/mezzarch      ↑ unpushed
+ appkit     ~/dev/appkit        ● staged
 ```
 
-Status labels are color-coded and columns are aligned for readability. Long result sets are automatically paged through `$PAGER` (or `less` if unset).
+The header row (`NAME`, `PATH`, `STATUS`) is bold and underlined. Name and path columns are padded to align across all results. Status labels are color-coded: red for unstaged, yellow for staged, bright blue for untracked, cyan for unpushed. In pretty mode on a terminal, output is automatically paged through `$PAGER` (or `less` if unset) unless `--no-pager` is passed.
 
 ### Plain (pipe default)
 
@@ -402,14 +403,14 @@ cargo build --release
 
 ## Roadmap
 
-- [ ] Repository scanning
-- [ ] Dirty state detection
-- [ ] Unpushed commit detection
-- [ ] Detailed output (`--details`)
-- [ ] JSON output (`--json`)
-- [ ] Pretty output (`--pretty` / `--plain`)
-- [ ] Built-in pager (`--pager` / `--no-pager`)
-- [ ] Ignore rule bypass (`--no-ignore`)
+- [x] Repository scanning
+- [x] Dirty state detection
+- [x] Unpushed commit detection
+- [x] Detailed output (`--details`)
+- [x] JSON output (`--json`)
+- [x] Pretty output (`--pretty` / `--plain`)
+- [x] Built-in pager (`--pager` / `--no-pager`)
+- [x] Ignore rule bypass (`--no-ignore`)
 - [ ] Config file support
 - [ ] Shell completions
 - [ ] Parallel scanning
