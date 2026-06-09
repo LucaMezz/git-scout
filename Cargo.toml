@@ -1,10 +1,10 @@
 [package]
-name = "git-sweep"
+name = "git-scout"
 version = "0.1.0"
 edition = "2024"
 description = "Scan directories for git repositories with uncommitted changes, untracked files, or unpushed commits"
 license = "MIT"
-repository = "https://github.com/LucaMezz/git-sweep"
+repository = "https://github.com/LucaMezz/git-scout"
 
 [dependencies]
 anyhow = "1.0.102"
