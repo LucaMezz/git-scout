@@ -97,7 +97,7 @@ struct Cli {
     #[arg(short = '0', long, conflicts_with_all = ["json", "pretty"])]
     null: bool,
 
-    /// Scan all directories, including those ignored by .gitignore
+    /// Bypass all ignore rules (.gitignore, .ignore, global excludes, .git/info/exclude) when scanning
     #[arg(long)]
     no_ignore: bool,
 

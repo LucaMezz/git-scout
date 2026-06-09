@@ -22,7 +22,7 @@ and get a clean list of repositories with local changes.
 
 **Output format is context-aware.** When stdout is a terminal, `git-scout` uses colored, formatted output with aligned columns. When stdout is piped to another tool, it automatically switches to plain text — so it composes naturally with `fzf`, `xargs`, `lazygit`, `nvim`, and shell scripts without any extra flags.
 
-By default, `git-scout` respects `.gitignore` files it encounters during scanning and skips ignored directories. Pass `--no-ignore` to scan everything.
+By default, `git-scout` respects all ignore rules it encounters during scanning — `.gitignore`, `.ignore`, the global git ignore file, and per-repo `.git/info/exclude` — and skips any directory those rules would exclude. Pass `--no-ignore` to bypass all of them and scan everything.
 
 ---
 
@@ -152,7 +152,7 @@ Page through results:
 git-scout ~/dev --all --pager
 ```
 
-Scan all directories, including those ignored by `.gitignore`:
+Bypass all ignore rules (.gitignore, .ignore, global excludes, .git/info/exclude):
 
 ```sh
 git-scout ~/dev --all --no-ignore
@@ -317,7 +317,7 @@ Options:
   -0, --null              Separate output entries with NUL bytes instead of newlines
       --pager             Pipe output through a pager (default: $PAGER or less)
       --no-pager          Disable automatic pager
-      --no-ignore         Scan all directories, including those ignored by .gitignore
+      --no-ignore         Bypass all ignore rules (.gitignore, .ignore, global excludes, .git/info/exclude)
   -h, --help              Print help
   -V, --version           Print version
 ```
@@ -348,17 +348,24 @@ A repository is **clean** if it has no dirty changes of any kind and no unpushed
 
 ---
 
-## .gitignore Behaviour
+## Ignore Rule Behaviour
 
-By default, `git-scout` respects every `.gitignore` file it encounters while walking the directory tree. Any directory that would be ignored by Git is skipped entirely, which keeps scans fast in workspaces that contain large build artifact or dependency directories (e.g. `node_modules`, `target`, `.venv`).
+By default, `git-scout` respects all ignore rules it encounters while walking the directory tree:
 
-Pass `--no-ignore` to disable this behaviour and scan all directories unconditionally:
+- **`.gitignore`** files at any level of the tree
+- **`.ignore`** files (the `ignore` crate's own format, honoured by tools like ripgrep)
+- **Global git ignore** — the file referenced by `core.excludesFile` in your git config (typically `~/.config/git/ignore`)
+- **Per-repo excludes** — `.git/info/exclude` inside each repository root
+
+Any directory matched by these rules is skipped entirely, which keeps scans fast in workspaces that contain large build artifact or dependency directories (e.g. `node_modules`, `target`, `.venv`).
+
+Pass `--no-ignore` to disable all of these rules and scan every directory unconditionally:
 
 ```sh
 git-scout ~/dev --all --no-ignore
 ```
 
-This is useful when your workspace layout puts repositories inside directories that are themselves gitignored, or when you want to audit a directory tree that has unusual ignore rules.
+This is useful when your workspace layout puts repositories inside directories that are themselves excluded by one of the above rule sources, or when you want to audit a directory tree that has unusual ignore configuration.
 
 ---
 
@@ -402,7 +409,7 @@ cargo build --release
 - [ ] JSON output (`--json`)
 - [ ] Pretty output (`--pretty` / `--plain`)
 - [ ] Built-in pager (`--pager` / `--no-pager`)
-- [ ] `.gitignore` bypass (`--no-ignore`)
+- [ ] Ignore rule bypass (`--no-ignore`)
 - [ ] Config file support
 - [ ] Shell completions
 - [ ] Parallel scanning
