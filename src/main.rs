@@ -220,16 +220,31 @@ fn render_pretty(results: &[RepoStatus], root: &Path, relative: bool) -> String 
         .map(|r| format_path(&r.path, root, relative, true))
         .collect();
 
-    let max_name = names.iter().map(|s| s.len()).max().unwrap_or(0);
-    let max_path = paths.iter().map(|s| s.len()).max().unwrap_or(0);
+    const H_NAME: &str = "NAME";
+    const H_PATH: &str = "PATH";
+    const H_STATUS: &str = "STATUS";
 
+    let max_name = names.iter().map(|s| s.len()).max().unwrap_or(0).max(H_NAME.len());
+    let max_path = paths.iter().map(|s| s.len()).max().unwrap_or(0).max(H_PATH.len());
+
+    // Pad before colorizing — ANSI codes inflate len() so padding must come first.
     let mut out = String::new();
+    out.push_str(&format!(
+        " {}   {}   {}\n",
+        format!("{H_NAME:<max_name$}").bold().underline(),
+        format!("{H_PATH:<max_path$}").bold().underline(),
+        H_STATUS.bold().underline(),
+    ));
+
     for ((name, path_str), status) in names.iter().zip(paths.iter()).zip(results.iter()) {
         let labels = render_labels_pretty(status);
+        let name_col = format!("{name:<max_name$}").bold().bright_white().to_string();
         if labels.is_empty() {
-            out.push_str(&format!(" {name:<max_name$}   {path_str}\n"));
+            let path_col = path_str.dimmed().to_string();
+            out.push_str(&format!(" {name_col}   {path_col}\n"));
         } else {
-            out.push_str(&format!(" {name:<max_name$}   {path_str:<max_path$}   {labels}\n"));
+            let path_col = format!("{path_str:<max_path$}").dimmed().to_string();
+            out.push_str(&format!(" {name_col}   {path_col}   {labels}\n"));
         }
     }
     out
